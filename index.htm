@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <title>Test Gemini</title>
+    <style type="text/css">
+        <!--
+        body {
+            color: #000000;
+            background-color: #0072C6;
+            margin: 0;
+        }
+        -->
+    </style>
+    <script type="module" src="olga.js"></script>
+</head>
+
+<body>
+
+    <script type="module">"use strict";
+        // To use something from olga.js, you MUST import it explicitly
+        import Olga from './olga.js';
+
+        const olga = new Olga();
+        //olga.generate("Just respond the word ok no other text");
+        olga.test() // Test the connection and streaming, not the content. We want to bypass any caching
+        console.log(olga.list())
+
+        //olga.downloadIIS_Config() // On demand from now!
+    </script>
+</body>
+
+</html>
