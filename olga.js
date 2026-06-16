@@ -1,5 +1,4 @@
-import { Gemini_3_5_Flash_API } from './apis/Gemini_3_5_Flash_API.js';
-import { Gemini_3_1_Flash_Lite_API } from './apis/Gemini_3_1_Flash_Lite_API.js';
+import Google_API from './apis/Google_API.js';
 
 export default class Olga {
 
@@ -12,13 +11,13 @@ export default class Olga {
     initModels() {
         // Explicit bindings easiest possible way to manage models and their always evolvingplans...
         new Instance(this,
-            { name: "Gemini 3.1 Flash Lite", provider: "Google", quality: 310, api: Gemini_3_1_Flash_Lite_API },
+            { name: "Gemini 3.1 Flash Lite", provider: "Google", quality: 310, api: new Google_API({ providerName: "Google", handlerName: "gemini-3.1-flash-lite" }) },
             { name: "Level 1", tokenInputPrice: 0.25 / 1000000, tokenOutputPrice: 1.5 / 1000000, RPM: 4000, TPM: 4000000, RPD: 150000 })
         new Instance(this,
-            { name: "Gemini 3.5 Flash", provider: "Google", quality: 350, api: Gemini_3_5_Flash_API },
+            { name: "Gemini 3.5 Flash", provider: "Google", quality: 350, api: new Google_API({ providerName: "Google", handlerName: "gemini-3.5-flash" }) },
             { name: "Level 1", tokenInputPrice: 1.5 / 1000000, tokenOutputPrice: 9 / 1000000, RPM: 1000, TPM: 2000000, RPD: 10000 })
         new Instance(this,
-            { name: "Gemini 3.5 Flash", provider: "Google", quality: 350, api: Gemini_3_5_Flash_API },
+            { name: "Gemini 3.5 Flash", provider: "Google", quality: 350, api: new Google_API({ providerName: "Google", handlerName: "gemini-3.5-flash" }) },
             { name: "Free tier", RPM: 10, TPM: 250000, RPD: 1500 })
     }
     * generate({ prompt, chunkHandler, doneHandler, quality = 0, provider = null, apiKey = null }) {
@@ -28,15 +27,12 @@ export default class Olga {
         //.filter(instance => instance.quality >= quality) // Filter out instances that have no remaining RPM
         return inst.generate({ prompt, chunkHandler, doneHandler, apiKey })
     }
-    list() {
-        return this.instances
-    }
     test() {
         this.instances.forEach(instance => instance.test())
     }
     downloadIIS_Config() {
         const apis = {}
-        this.instances.forEach(instance => { apis[instance.model.api.handlerName] = instance.model.api.extractIISRules() })
+        this.instances.forEach(instance => { apis[instance.model.provider] = instance.model.api.extractIISRules() })
 
         let textContents = `<?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -106,6 +102,7 @@ class Instance {
     constructor(olga, model, plan) {
         this.model = model
         this.plan = plan
+        this.name = `${model.name} (${plan.name})`
 
         // Freeze identity attributes to prevent changes after initialization, ensuring immutability of the instance's core properties.
         Object.defineProperty(this, 'model', { value: model, writable: false, configurable: false, enumerable: true });
@@ -124,13 +121,11 @@ class Instance {
         this.runningBill += token.in * this.plan.tokenInputPrice + token.out * this.plan.tokenOutputPrice
     }
     test() {
-        if (!this.model.api.lastTested || Date.now() - this.model.api.lastTested > 5 * 60 * 1000) {
-            // Just test the connection and streaming, not the content. We want to bypass any caching
-            //const self = this
-            this.generate({ prompt: "Just respond the word ok no other text" })
-        }
+        this.model.api.status = false
+        this.generate({ prompt: "Just respond the word ok no other text" })
     }
 }
+
 
 //window.OlgaAPI = new _Olga();
 //export const Olga = window.OlgaAPI;

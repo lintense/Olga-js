@@ -1,23 +1,28 @@
 const DEF_HANDLER = (x) => { console.log(x) };
 const NULL_HANDLER = (x) => { };
+const SERVER_MANAGED_KEY = "api"
+const BROWSER_MANAGED_KEY = "api-tempkey"
 
-export class _Gemini_3_1_Flash_Lite_API {
+export default class Google_API {
 
-    constructor() {
-        this.handlerName = "gemini-3.1-flash-lite"
+    constructor({ providerName, handlerName }) {
+        this.providerName = providerName
+        this.handlerName = handlerName
         this.lastTested = null
+        this.ping = null
+        this.speed = null
         this.status = false
     }
     extractIISRules() {
         // This function would contain the logic to extract IIS rules from the streaming response.
         // The implementation would depend on the specific format of the response and the rules.
         // For example, if the rules are included in a specific JSON structure, we would parse the stream for that structure and extract the rules accordingly.
-        return `<rule name="${this.handlerName}-api" stopProcessing="true">
-    <match url=".*${this.handlerName}-api/(.*)" />
-    <action type="Rewrite" url="https://generativelanguage.googleapis.com/{R:1}?key=YOUR_KEY_HERE" appendQueryString="true" />
+        return `<rule name="${this.providerName}-${SERVER_MANAGED_KEY}" stopProcessing="true">
+    <match url=".*${this.providerName}-${SERVER_MANAGED_KEY}(.*)" />
+    <action type="Rewrite" url="https://generativelanguage.googleapis.com/{R:1}?key={API_KEYS:${this.providerName}_KEY}" appendQueryString="true" />
 </rule>
-<rule name="${this.handlerName}-api-tempkey" stopProcessing="true">
-    <match url=".*${this.handlerName}-api-tempkey/(.*)" />
+<rule name="${this.providerName}-${BROWSER_MANAGED_KEY}" stopProcessing="true">
+    <match url=".*${this.providerName}-${BROWSER_MANAGED_KEY}/(.*)" />
     <action type="Rewrite" url="https://generativelanguage.googleapis.com/{R:1}?" appendQueryString="true" />
 </rule>`
     }
@@ -25,8 +30,8 @@ export class _Gemini_3_1_Flash_Lite_API {
     async generate({ prompt, chunkHandler = NULL_HANDLER, doneHandler = DEF_HANDLER, token, apiKey = null }) {
         this.lastTested = Date.now() // Mark the time of this generation attempt;
         const url = apiKey == null
-            ? `./${this.handlerName}-api/v1beta/models/gemini-3.5-flash:streamGenerateContent?`
-            : `./${this.handlerName}-api-tempkey/v1beta/models/gemini-3.5-flash:streamGenerateContent?${this.keyParamName}=${apiKey}`;
+            ? `./${this.providerName}-${SERVER_MANAGED_KEY}/v1beta/models/${this.handlerName}:streamGenerateContent?`
+            : `./${this.providerName}-${BROWSER_MANAGED_KEY}/v1beta/models/${this.handlerName}:streamGenerateContent?key=${apiKey}`;
 
         const payload = {
             contents: [
@@ -37,6 +42,7 @@ export class _Gemini_3_1_Flash_Lite_API {
                 }
             ]
         };
+        const t1 = performance.now()
 
         try {
             console.log("Sending request to Gemini with payload:", prompt);
@@ -57,6 +63,8 @@ export class _Gemini_3_1_Flash_Lite_API {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
+            const pingTime = performance.now() - t1
+            this.ping = !this.ping ? pingTime : (this.ping * 2 + pingTime) / 3 // Moving average ping in ms
             const reader = response.body.getReader();
             const decoder = new TextDecoder("utf-8");
 
@@ -68,7 +76,9 @@ export class _Gemini_3_1_Flash_Lite_API {
                 if (done) {
                     this.status = true
                     token.out += fullOutput.length
-                    doneHandler(fullOutput); // Call the done handler with the full output when streaming is complete   
+                    doneHandler(fullOutput); // Call the done handler with the full output when streaming is complete
+                    const responseTime = performance.now() - pingTime - t1
+                    this.speed = !this.speed ? responseTime / token.out : (this.speed * 2 + responseTime / token.out) / 3 // Moving average speed in chars per ms
                     break;
                 }
 
@@ -96,5 +106,3 @@ export class _Gemini_3_1_Flash_Lite_API {
     }
 
 }
-
-export const Gemini_3_1_Flash_Lite_API = new _Gemini_3_1_Flash_Lite_API();

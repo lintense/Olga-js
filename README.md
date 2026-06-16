@@ -1,24 +1,27 @@
 # Online LLM Generic Adapter (Olga.js)
 
-![image](./img/carousel-horses-1551367820tSF.jpg)
+![image](./img/carousel-horses.jpg)
 
 Olga thrives to be the simplest LLM adpater you can hope for and yet its unique features will make it quickly indispensable. In a word, Olga does not tell you what to do or how to do it!
 
 What she do:
-- All server are accessed through the same common interface
-- Support for text only generator for now
-- API Keys can be manage by the web server and/or simultaneously by your application
-- All server requests are metered
+- All servers are accessed through the same common interface.
+- Support for text only generator for now.
+- API Keys can be manage by the web server and/or simultaneously by your application.
+- Successful server requests are metered.
 
 What she does not do:
-- No pre/post processsing
-- No system/assistant/user prompt
-- No dependencies
+- No pre/post processsing.
+- No system/assistant/user prompt.
+- No dependencies.
 
-### To configure Olga on Windows
+### To configure Olga on Windows (IIS)
+
 - First, you will need to add the URL Rewriting features into IIS.
-- Update the olga/web.config file to include your API_KEYS (or your ALIASES)
-- Add a `<location/>` block in your main site to alow children sites to have their own config
+- Ensure olga's `web.config` file is in the same folder than your index.htm file.
+- If already a `web.config`, merge it with olga's
+- If not, add a `<location/>` block in your main site web.config to allow sub-sites to have their own config
+
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
@@ -30,18 +33,37 @@ What she does not do:
 </configuration> 
 ```
 
+### Managing API_KEYS in Windows (IIS)
+- NOTE: You do not need to do this if you intend to manage your keys from the browser.
+- Open the IIS Rewrite Maps section: https://learn.microsoft.com/en-us/iis/extensions/url-rewrite-module/using-rewrite-maps-in-url-rewrite-module
+- Create a new `API_KEYS` map table.
+- Add your provider keys to the list: Use `<provider>_KEY` syntax to match olga's web.config names.
+
+![image](./img/Rewrite-Maps.png)
+
+
+It is possible to move the rewriteMaps section away from the `web.config` file in a separate file located in a more secure folder.
+
+If everyting went right you should see Olga's magnificent status page
+![image](./img/Olga-status.png)
+
+
 ## Interface
 
 To generate new content from any available LLM
 
 ```
-const olga = new Olga();
-olga.generate({
-    prompt: "Just respond the word ok no other text", 
-    doneHandler: (x) => console.log(x),
-});
+<script type="module">"use strict";
+    import Olga from './olga.js';
+    const olga = new Olga();
+    olga.generate({
+        prompt: "Just respond the word ok no other text", 
+        doneHandler: (x) => console.log(x),
+    });
+</script>
 ```
 Optional parameters:
+- `chunkHandler` : Will be called each time a chunk of text is received
 - `Provider` : Which provider you want to call, default = any
 - `Key` : The end user API key (require Provider), default provided by IIS
 - `Quality` : The minimum level of quality, default = 0
@@ -52,6 +74,7 @@ Test the connection and streaming, not the content.
 ```
 const olga = new Olga();
 olga.test()
+console.log(olga.instances) 
 ```
 
 ## Advanced stuff
@@ -82,4 +105,22 @@ Note that each combination of model-plan is a different instance.
 Never write your API Keys in plain code, it could inatvertently end up on a public Github folder...
 
 
+# Troubleshooting
 
+Erreur HTTP 500.52 - URL Rewrite Module Error.
+There is an error in your web.config file!
+
+---
+
+
+# Road map
+
+Make ogla generate the IIS rules (instead of the apis)
+Use provider for key names
+
+
+
+tell where the web.config file must be placed...
+
+
+Update the olga/web.config file to include your API_KEYS (or your ALIASES)
