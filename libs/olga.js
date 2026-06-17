@@ -1,4 +1,5 @@
-import Google_API from './apis/Google_API.js';
+import Google_API from '../apis/Google_API.js';
+import MiniSort from '../libs//MiniSort.js';
 
 export default class Olga {
 

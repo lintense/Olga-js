@@ -2,7 +2,7 @@
 
 ![image](./img/carousel-horses.jpg)
 
-Olga thrives to be the simplest LLM adpater you can hope for and yet its unique features will make it quickly indispensable. In a word, Olga does not tell you what to do or how to do it!
+Olga thrives to be the simplest Browser LLM adpater you can hope for and yet its unique features will make it quickly indispensable. In a word, Olga does not tell you what to do or how to do it!
 
 What she do:
 - All servers are accessed through the same common interface.

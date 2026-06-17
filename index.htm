@@ -4,7 +4,8 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
     <title>Test Gemini</title>
-    <script type="module" src="olga.js"></script>
+    <!--script type="module" src="./libs/olga.js"></script-->
+    <script type="text/javascript" src="./libs/nearley.js"></script>
 </head>
 
 <body>
@@ -15,23 +16,27 @@
     <button id="uploadConfig">Upload web.config</button>
     <script type="module">"use strict";
         // To use something from olga.js, you MUST import it explicitly
-        import Olga from './olga.js';
+        import Olga from './libs/olga.js';
+        /*
+                const olga = new Olga();
+                // olga.downloadIIS_Config() // On demand from now!
+        
+                //olga.generate("Just respond the word ok no other text");
+                olga.test() // Test the connection and streaming, not the content. We want to bypass any caching
+                console.log(olga.instances)
+        
+                const showStatus = () => {
+                    document.getElementById("olgaStatus").innerHTML = olga.instances.map(instance =>
+                        `${instance.name}: Status=${instance.model.api.status.toString().toUpperCase()} Ping(ms)=${Math.trunc(instance.model.api.ping)}`).join("<br>")
+                }
+                showStatus()
+                setInterval(showStatus, 1000);
+                document.getElementById("testInstances").addEventListener("click", () => olga.test())
+                document.getElementById("uploadConfig").addEventListener("click", () => olga.downloadIIS_Config())
+        */
 
-        const olga = new Olga();
-        // olga.downloadIIS_Config() // On demand from now!
-
-        //olga.generate("Just respond the word ok no other text");
-        olga.test() // Test the connection and streaming, not the content. We want to bypass any caching
-        console.log(olga.instances)
-
-        const showStatus = () => {
-            document.getElementById("olgaStatus").innerHTML = olga.instances.map(instance =>
-                `${instance.name}: Status=${instance.model.api.status.toString().toUpperCase()} Ping(ms)=${Math.trunc(instance.model.api.ping)}`).join("<br>")
-        }
-        showStatus()
-        setInterval(showStatus, 1000);
-        document.getElementById("testInstances").addEventListener("click", () => olga.test())
-        document.getElementById("uploadConfig").addEventListener("click", () => olga.downloadIIS_Config())
+        import MiniSort from './libs/MiniSort.js';
+        MiniSort.test()
     </script>
 </body>
 
