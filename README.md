@@ -2,11 +2,10 @@
 
 ![image](./img/carousel-horses.jpg)
 
-Olga thrives to be the simplest Browser LLM adpater you can hope for and yet its unique features will make it quickly indispensable. In a word, Olga does not tell you what to do or how to do it!
+Olga thrives to be the simplest text generator LLM adpater you can hope for and yet its unique features will make it quickly indispensable. In a word, Olga does not tell you what to do or how to do it!
 
-What she do:
+What she does:
 - All servers are accessed through the same common interface.
-- Support for text only generator for now.
 - API Keys can be manage by the web server and/or simultaneously by your application.
 - Successful server requests are metered.
 
@@ -45,7 +44,10 @@ What she does not do:
 It is possible to move the rewriteMaps section away from the `web.config` file in a separate file located in a more secure folder.
 
 If everyting went right you should see Olga's magnificent status page
+
 ![image](./img/Olga-status.png)
+
+- 
 
 
 ## Interface
@@ -118,7 +120,8 @@ There is an error in your web.config file!
 Make ogla generate the IIS rules (instead of the apis)
 Use provider for key names
 
-
+Warning: extractIISRules poses a security risk...
+Your key is safe but possible to send ad hoc requests
 
 tell where the web.config file must be placed...
 

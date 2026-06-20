@@ -1,3 +1,4 @@
+import BaseAPI from '../apis/BaseAPI.js';
 import Google_API from '../apis/Google_API.js';
 import MiniSort from '../libs//MiniSort.js';
 
@@ -6,6 +7,7 @@ export default class Olga {
     constructor() {
         this.models = []
         this.instances = []
+        this.mini = new MiniSort(Instance.ACCESSORS)
         Object.freeze(this)
         this.initModels()
     }
@@ -21,12 +23,20 @@ export default class Olga {
             { name: "Gemini 3.5 Flash", provider: "Google", quality: 350, api: new Google_API({ providerName: "Google", handlerName: "gemini-3.5-flash" }) },
             { name: "Free tier", RPM: 10, TPM: 250000, RPD: 1500 })
     }
-    * generate({ prompt, chunkHandler, doneHandler, quality = 0, provider = null, apiKey = null }) {
+    sortInstances(selector) {
+        if (Array.isArray(selector))
+            return this.mini.process(this.instances, this.mini.parse(selector))
+        else
+            return this.mini.processList(this.instances, this.mini.parseList(selector))
+    }
+    static DEFAULT_SELECTOR = "Status=true, <TokenOutputPrice, <TokenInputPrice, >Quality";
+    * generate({ instance = null, prompt, chunkHandler, doneHandler, apiKey = null }) {
+        if (!prompt)
+            throw new Error("Empty prompt!")
+
         // Aquire best instance based on quality and availability
-        const inst = this.instances.filter(instance => instance.model.provider == provider && instance.model.quality >= quality)[0]
-        //.sort((a, b) => b.model.quality - a.model.quality) // Sort by quality descending
-        //.filter(instance => instance.quality >= quality) // Filter out instances that have no remaining RPM
-        return inst.generate({ prompt, chunkHandler, doneHandler, apiKey })
+        const instances = this.selectInstance(Olga.DEFAULT_SELECTOR)
+        return instances[0].generate({ prompt, chunkHandler, doneHandler, apiKey })
     }
     test() {
         this.instances.forEach(instance => instance.test())
@@ -87,6 +97,16 @@ class Plan {
 
         Object.freeze(this)
     }
+    static ACCESSORS = {
+        PlanName: plan => plan.name,
+        MaxToken: plan => plan.maxToken,
+        ResetTime: plan => plan.resetTime,
+        TokenInputPrice: plan => plan.tokenInputPrice,
+        TokenOutputPrice: plan => plan.tokenOutputPrice,
+        RPM: plan => plan.RPM,
+        TPM: plan => plan.TPM,
+        RPD: plan => plan.RPD,
+    }
 }
 
 class Model {
@@ -97,8 +117,13 @@ class Model {
         this.api = api
         Object.freeze(this)
     }
+    static ACCESSORS = {
+        ModelName: model => model.name,
+        Provider: model => model.provider,
+        Quality: model => model.Quality,
+    }
 }
-
+const remap = (obj, func) => Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, v => value(func(v))]))
 class Instance {
     constructor(olga, model, plan) {
         this.model = model
@@ -122,8 +147,13 @@ class Instance {
         this.runningBill += token.in * this.plan.tokenInputPrice + token.out * this.plan.tokenOutputPrice
     }
     test() {
-        this.model.api.status = false
+        this.model.api.metrics.status = false
         this.generate({ prompt: "Just respond the word ok no other text" })
+    }
+    static ACCESSORS = {
+        ...remap(Model.ACCESSORS, x => instance => x(instance.model)),
+        ...remap(Plan.ACCESSORS, x => instance => x(instance.plan)),
+        ...remap(BaseAPI.ACCESSORS, x => instance => x(instance.model.api)),
     }
 }
 

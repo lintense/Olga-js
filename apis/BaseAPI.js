@@ -1,0 +1,91 @@
+export default class BaseAPI {
+
+    static DEF_HANDLER = (x) => { console.log(x) };
+    static NULL_HANDLER = (x) => { };
+    static SERVER_MANAGED_KEY = "api"
+    static BROWSER_MANAGED_KEY = "api-tempkey"
+
+    constructor({ providerName, handlerName }) {
+        this.providerName = providerName
+        this.handlerName = handlerName
+        this.metrics = { lastTested: null, ping: null, speed: null, status: false }
+        Object.freeze(this)
+    }
+    // This function contains the logic to extract IIS rules from the streaming response.
+    // The implementation would depend on the specific format of the response and the rules.
+    // For example, if the rules are included in a specific JSON structure, we would parse the stream for that structure and extract the rules accordingly.
+    extractIISRules() {
+        throw new Error("To be implemented by subclass")
+    }
+    async generate({ chunkHandler = BaseAPI.NULL_HANDLER, doneHandler = BaseAPI.DEF_HANDLER, token, url, payload }) {
+        this.metrics.lastTested = Date.now() // Mark the time of this generation attempt;
+        console.log(`Sending request to ${this.handlerName} with prompt: ${prompt}`);
+        const t1 = performance.now()
+
+        try {
+
+            // The browser thinks it's staying on 'https://local_project', so CORS is bypassed!
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Cache-Control": "no-cache, no-store, must-revalidate", // Prevents caching
+                    "Pragma": "no-cache",                                   // For older HTTP/1.0 compatibility
+                    "Expires": "0" // Proxies treat as immediately expired
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                this.metrics.status = false
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const pingTime = performance.now() - t1
+            this.metrics.ping = !this.metrics.ping ? pingTime : (this.metrics.ping * 2 + pingTime) / 3 // Moving average ping in ms
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder("utf-8");
+
+            console.log(`Streaming response from ${this.handlerName} starting ...`);
+            let fullOutput = "";
+
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) {
+                    this.metrics.status = true
+                    token.out += fullOutput.length
+                    doneHandler(fullOutput); // Call the done handler with the full output when streaming is complete
+                    const responseTime = performance.now() - pingTime - t1
+                    this.metrics.speed = !this.metrics.speed ? responseTime / token.out : (this.metrics.speed * 2 + responseTime / token.out) / 3 // Moving average speed in chars per ms
+                    break;
+                }
+
+                const chunkText = decoder.decode(value, { stream: true });
+                const regex = /"text"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
+                let match;
+
+                while ((match = regex.exec(chunkText)) !== null) {
+                    const cleanText = match[1]
+                        .replace(/\\n/g, '\n')
+                        .replace(/\\t/g, '\t')
+                        .replace(/\\"/g, '"');
+
+                    fullOutput += cleanText;
+                    chunkHandler(cleanText);
+                }
+            }
+
+            console.log(`...Streaming response from ${this.handlerName} ended`);
+
+        } catch (error) {
+            this.metrics.status = false
+            console.error("Error reading proxy stream:", error);
+        }
+    }
+    static ACCESSORS = {
+        LastTested: (api => api.metrics.lastTested),
+        Ping: (api => api.metrics.ping),
+        Speed: (api => api.metrics.speed),
+        Status: (api => api.metrics.status),
+    }
+}
