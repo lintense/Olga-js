@@ -127,3 +127,18 @@ tell where the web.config file must be placed...
 
 
 Update the olga/web.config file to include your API_KEYS (or your ALIASES)
+
+Ce code doit [etre dans le root...]
+Code d erreur: 0x80070585
+Le code d'erreur 0x80070585 associé au gestionnaire ExtensionlessUrlHandler-Integrated-4.0
+correspond généralement à une erreur de type "Impossible d'ajouter une entrée de collection dupliquée" (Duplicate collection entry).
+
+ENSURE YOU HAVE THIS in your olga web.config
+               </rules>
+<allowedServerVariables>
+    <!-- Supprime l'entrée potentiellement existante pour éviter le doublon -->
+    <remove name="HTTP_Authorization" />
+    <!-- Ajoute l'entrée proprement pour votre application -->
+    <add name="HTTP_Authorization" />
+</allowedServerVariables>
+        </rewrite>

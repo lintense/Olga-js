@@ -30,7 +30,7 @@ export default class Google_API extends BaseAPI {
                 }
             ]
         };
-        console.log("Sending request to Gemini with payload:", prompt);
+        console.log(`Sending request to ${this.handlerName} with payload:`, prompt);
         return super.generate({ prompt, chunkHandler, doneHandler, token, url, payload })
     }
 

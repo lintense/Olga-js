@@ -1,5 +1,6 @@
 import BaseAPI from '../apis/BaseAPI.js';
 import Google_API from '../apis/Google_API.js';
+import Nvidia_API from '../apis/Nvidia_API.js';
 import MiniSort from '../libs//MiniSort.js';
 
 export default class Olga {
@@ -13,6 +14,7 @@ export default class Olga {
     }
     initModels() {
         // Explicit bindings easiest possible way to manage models and their always evolvingplans...
+        /*
         new Instance(this,
             { name: "Gemini 3.1 Flash Lite", provider: "Google", quality: 310, api: new Google_API({ providerName: "Google", handlerName: "gemini-3.1-flash-lite" }) },
             { name: "Level 1", tokenInputPrice: 0.25 / 1000000, tokenOutputPrice: 1.5 / 1000000, RPM: 4000, TPM: 4000000, RPD: 150000 })
@@ -21,7 +23,10 @@ export default class Olga {
             { name: "Level 1", tokenInputPrice: 1.5 / 1000000, tokenOutputPrice: 9 / 1000000, RPM: 1000, TPM: 2000000, RPD: 10000 })
         new Instance(this,
             { name: "Gemini 3.5 Flash", provider: "Google", quality: 350, api: new Google_API({ providerName: "Google", handlerName: "gemini-3.5-flash" }) },
-            { name: "Free tier", RPM: 10, TPM: 250000, RPD: 1500 })
+            { name: "Free tier", RPM: 10, TPM: 250000, RPD: 1500 }),*/
+        new Instance(this,
+            { name: "GLM 5.1", provider: "Nvidia", quality: 350, api: new Nvidia_API({ providerName: "Nvidia_GLM", handlerName: "z-ai/glm-5.1" }) },
+            { name: "Free tier", RPM: 4, TPM: 1000, RPD: 1000 })
     }
     sortInstances(selector) {
         if (Array.isArray(selector))
