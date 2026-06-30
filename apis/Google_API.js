@@ -6,16 +6,18 @@ export default class Google_API extends BaseAPI {
         // This function contains the logic to extract IIS rules from the streaming response.
         // The implementation would depend on the specific format of the response and the rules.
         // For example, if the rules are included in a specific JSON structure, we would parse the stream for that structure and extract the rules accordingly.
-        return `<rule name="${this.providerName}-${SERVER_MANAGED_KEY}" stopProcessing="true">
-    <match url=".*${this.providerName}-${SERVER_MANAGED_KEY}(.*)" />
-    <action type="Rewrite" url="https://generativelanguage.googleapis.com/{R:1}?key={API_KEYS:${this.providerName}_KEY}" appendQueryString="true" />
+        return `<rule name="${this.providerName}-${BaseAPI.SERVER_MANAGED_KEY}" stopProcessing="true">
+    <match url=".*${this.providerName}-${BaseAPI.SERVER_MANAGED_KEY}(.*)" />
+    <action type="Rewrite" url="https://generativelanguage.googleapis.com/{R:1}?key={API_KEYS:${this.providerName}${BaseAPI.API_KEY_SUFFIX}}" appendQueryString="true" />
 </rule>
-<rule name="${this.providerName}-${BROWSER_MANAGED_KEY}" stopProcessing="true">
-    <match url=".*${this.providerName}-${BROWSER_MANAGED_KEY}/(.*)" />
+<rule name="${this.providerName}-${BaseAPI.BROWSER_MANAGED_KEY}" stopProcessing="true">
+    <match url=".*${this.providerName}-${BaseAPI.BROWSER_MANAGED_KEY}/(.*)" />
     <action type="Rewrite" url="https://generativelanguage.googleapis.com/{R:1}?" appendQueryString="true" />
 </rule>`
     }
-
+    extractContent() {
+        return /"text"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
+    }
     async generate({ prompt, chunkHandler, doneHandler, token, apiKey = null }) {
         this.metrics.lastTested = Date.now() // Mark the time of this generation attempt;
         const url = apiKey == null

@@ -14,19 +14,36 @@ export default class Olga {
     }
     initModels() {
         // Explicit bindings easiest possible way to manage models and their always evolvingplans...
-        /*
+
         new Instance(this,
-            { name: "Gemini 3.1 Flash Lite", provider: "Google", quality: 310, api: new Google_API({ providerName: "Google", handlerName: "gemini-3.1-flash-lite" }) },
+            {
+                name: "Gemini 3.1 Flash Lite", provider: "Google", quality: 310,
+                card: "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/3-1-flash-lite",
+                api: new Google_API({ providerName: "Google", handlerName: "gemini-3.1-flash-lite" })
+            },
             { name: "Level 1", tokenInputPrice: 0.25 / 1000000, tokenOutputPrice: 1.5 / 1000000, RPM: 4000, TPM: 4000000, RPD: 150000 })
         new Instance(this,
-            { name: "Gemini 3.5 Flash", provider: "Google", quality: 350, api: new Google_API({ providerName: "Google", handlerName: "gemini-3.5-flash" }) },
+            {
+                name: "Gemini 3.5 Flash", provider: "Google", quality: 350,
+                card: "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/3-5-flash",
+                api: new Google_API({ providerName: "Google", handlerName: "gemini-3.5-flash" })
+            },
             { name: "Level 1", tokenInputPrice: 1.5 / 1000000, tokenOutputPrice: 9 / 1000000, RPM: 1000, TPM: 2000000, RPD: 10000 })
         new Instance(this,
-            { name: "Gemini 3.5 Flash", provider: "Google", quality: 350, api: new Google_API({ providerName: "Google", handlerName: "gemini-3.5-flash" }) },
-            { name: "Free tier", RPM: 10, TPM: 250000, RPD: 1500 }),*/
-        new Instance(this,
-            { name: "GLM 5.1", provider: "Nvidia", quality: 350, api: new Nvidia_API({ providerName: "Nvidia_GLM", handlerName: "z-ai/glm-5.1" }) },
-            { name: "Free tier", RPM: 4, TPM: 1000, RPD: 1000 })
+            {
+                name: "Gemini 3.5 Flash", provider: "Google", quality: 350,
+                card: "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/3-5-flash",
+                api: new Google_API({ providerName: "Google", handlerName: "gemini-3.5-flash" })
+            },
+            { name: "Free tier", RPM: 10, TPM: 250000, RPD: 1500 }),
+            // https://build.nvidia.com/z-ai/glm-5.1
+            new Instance(this,
+                {
+                    name: "GLM 5.1", provider: "Nvidia", quality: 350,
+                    card: "https://build.nvidia.com/z-ai/glm-5.1/modelcard",
+                    api: new Nvidia_API({ providerName: "Nvidia_GLM", handlerName: "z-ai/glm-5.1" })
+                },
+                { name: "Free tier", RPM: 4, TPM: 1000, RPD: 1000 })
     }
     sortInstances(selector) {
         if (Array.isArray(selector))
@@ -60,6 +77,10 @@ export default class Olga {
             textContents += value + "\n"
 
         textContents += `               </rules>
+            <allowedServerVariables>
+                <remove name="HTTP_Authorization" />
+                <add name="HTTP_Authorization" />
+            </allowedServerVariables>
         </rewrite>
     </system.webServer>
 </configuration>`
@@ -115,11 +136,12 @@ class Plan {
 }
 
 class Model {
-    constructor({ name, provider, quality, api }) {
+    constructor({ name, provider, quality, api, card }) {
         this.name = name;
         this.provider = provider
         this.quality = quality // a score of the model's output quality. This is a subjective measure based on benchmarks and user feedback.
         this.api = api
+        this.card = card
         Object.freeze(this)
     }
     static ACCESSORS = {

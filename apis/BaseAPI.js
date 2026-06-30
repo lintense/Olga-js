@@ -4,6 +4,7 @@ export default class BaseAPI {
     static NULL_HANDLER = (x) => { };
     static SERVER_MANAGED_KEY = "api"
     static BROWSER_MANAGED_KEY = "api-tempkey"
+    static API_KEY_SUFFIX = "_KEY"
 
     constructor({ providerName, handlerName }) {
         this.providerName = providerName
@@ -17,7 +18,10 @@ export default class BaseAPI {
     extractIISRules() {
         throw new Error("To be implemented by subclass")
     }
-    async generate({ chunkHandler = BaseAPI.NULL_HANDLER, doneHandler = BaseAPI.DEF_HANDLER, token, url, payload }) {
+    extractContent() {
+        throw new Error("To be implemented by subclass")
+    }
+    async generate({ chunkHandler = BaseAPI.NULL_HANDLER, doneHandler = BaseAPI.DEF_HANDLER, token, url, payload, headers = {} }) {
         this.metrics.lastTested = Date.now() // Mark the time of this generation attempt;
         console.log(`Sending request to ${this.handlerName} with prompt: ${prompt}`);
         const t1 = performance.now()
@@ -28,6 +32,7 @@ export default class BaseAPI {
             const response = await fetch(url, {
                 method: "POST",
                 headers: {
+                    ...headers,
                     "Content-Type": "application/json",
                     "Cache-Control": "no-cache, no-store, must-revalidate", // Prevents caching
                     "Pragma": "no-cache",                                   // For older HTTP/1.0 compatibility
@@ -36,11 +41,7 @@ export default class BaseAPI {
                 body: JSON.stringify(payload)
             });
 
-            if (!response.ok) {
-                this.metrics.status = false
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
+            this.metrics.status = response.ok
             const pingTime = performance.now() - t1
             this.metrics.ping = !this.metrics.ping ? pingTime : (this.metrics.ping * 2 + pingTime) / 3 // Moving average ping in ms
             const reader = response.body.getReader();
@@ -52,7 +53,6 @@ export default class BaseAPI {
             while (true) {
                 const { value, done } = await reader.read();
                 if (done) {
-                    this.metrics.status = true
                     token.out += fullOutput.length
                     doneHandler(fullOutput); // Call the done handler with the full output when streaming is complete
                     const responseTime = performance.now() - pingTime - t1
@@ -61,7 +61,8 @@ export default class BaseAPI {
                 }
 
                 const chunkText = decoder.decode(value, { stream: true });
-                const regex = /"text"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
+                //const regex = /"text"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
+                const regex = this.extractContent()
                 let match;
 
                 while ((match = regex.exec(chunkText)) !== null) {
