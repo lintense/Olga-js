@@ -18,7 +18,7 @@ export default class Google_API extends BaseAPI {
     extractContent() {
         return /"text"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
     }
-    async generate({ prompt, chunkHandler, doneHandler, token, apiKey = null }) {
+    async generate({ prompt, chunkHandler, doneHandler, token, apiKey = null, temp, topP, maxOutput }) {
         this.metrics.lastTested = Date.now() // Mark the time of this generation attempt;
         const url = apiKey == null
             ? `./${this.providerName}-${BaseAPI.SERVER_MANAGED_KEY}/v1beta/models/${this.handlerName}:streamGenerateContent?`
@@ -30,7 +30,12 @@ export default class Google_API extends BaseAPI {
                         { text: prompt }
                     ]
                 }
-            ]
+            ],
+            "generationConfig": {
+                "temperature": temp,
+                "topP": topP,
+                "maxOutputTokens": maxOutput
+            }
         };
         console.log(`Sending request to ${this.handlerName} with payload:`, prompt);
         return super.generate({ prompt, chunkHandler, doneHandler, token, url, payload })

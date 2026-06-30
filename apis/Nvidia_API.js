@@ -25,7 +25,7 @@ export default class Nvidia_API extends BaseAPI {
     extractContent() {
         return /"content"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
     }
-    async generate({ prompt, chunkHandler, doneHandler, token, apiKey = null }) {
+    async generate({ prompt, chunkHandler, doneHandler, token, apiKey = null, temp, topP, maxOutput }) {
         this.metrics.lastTested = Date.now() // Mark the time of this generation attempt;
         const url = apiKey == null
             ? `./Nvidia-Models-${BaseAPI.SERVER_MANAGED_KEY}`
@@ -36,9 +36,9 @@ export default class Nvidia_API extends BaseAPI {
         const payload = {
             "model": this.handlerName,
             "messages": [{ "role": "user", "content": prompt }],
-            "temperature": 1,
-            "top_p": 1,
-            "max_tokens": 16384,
+            "temperature": temp,
+            "top_p": topP,
+            "max_tokens": maxOutput,
             "stream": true
         };
         //console.log(`Sending request to ${this.handlerName} with payload:`, prompt);

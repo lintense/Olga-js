@@ -166,9 +166,9 @@ class Instance {
 
         olga.instances.push(this)
     }
-    generate({ prompt, chunkHandler, doneHandler, apiKey }) {
+    generate({ prompt, chunkHandler, doneHandler, apiKey, temp = 1.0, topP = 0.95, maxOutput = 16384 }) {
         const token = { in: prompt.length, out: 0, ts: Date.now() }
-        const out = this.model.api.generate({ prompt, chunkHandler, doneHandler, apiKey, token })
+        const out = this.model.api.generate({ prompt, chunkHandler, doneHandler, apiKey, token, temp, topP, maxOutput })
         // TODO compute metrics here!!!
         this.tokenCount.push(token)
         this.runningBill += token.in * this.plan.tokenInputPrice + token.out * this.plan.tokenOutputPrice
