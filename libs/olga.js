@@ -41,12 +41,12 @@ export default class Olga {
             {
                 name: "GLM 5.1", provider: "Nvidia", quality: 350,
                 card: "https://build.nvidia.com/z-ai/glm-5.1/modelcard",
-                api: new Nvidia_API({ providerName: "Nvidia_GLM", handlerName: "z-ai/glm-5.1" })
+                api: new Nvidia_API({ providerName: "Nvidia", handlerName: "z-ai/glm-5.1" })
             },
             { name: "Free tier", RPM: 4, TPM: 1000, RPD: 1000 })
         new Instance(this,
             {
-                name: "GPT 5 nano", provider: "Open AI", quality: 200,
+                name: "GPT 5 Nano", provider: "Open AI", quality: 200,
                 card: "https://developers.openai.com/api/docs/models/gpt-5-nano",
                 api: new OpenAI_API({ providerName: "Open_AI", handlerName: "gpt-5-nano" })
             },
@@ -54,11 +54,29 @@ export default class Olga {
 
         new Instance(this,
             {
-                name: "GPT 3.5 turbo", provider: "Open AI", quality: 250,
+                name: "GPT 3.5 Turbo", provider: "Open AI", quality: 250,
                 card: "https://developers.openai.com/api/docs/models/gpt-3.5-turbo",
-                api: new OpenAI_API({ providerName: "Open_AI", handlerName: "gpt-3.5-turbo", tokenInputPrice: 0.5 / 1000000, tokenOutputPrice: 1.5 / 1000000 })
+                api: new OpenAI_API({ providerName: "Open_AI", handlerName: "gpt-3.5-turbo" })
             },
             { name: "Tier 1", RPM: 500, TPM: 200000, RPD: 10000, tokenInputPrice: 0.5 / 1000000, tokenOutputPrice: 1.5 / 1000000 })
+
+        new Instance(this,
+            {
+                name: "Qwen 3.5 122B A10B", provider: "Nvidia", quality: 250,
+                card: "https://docs.api.nvidia.com/nim/reference/qwen-qwen3-5-122b-a10b",
+                api: new Nvidia_API({ providerName: "Nvidia", handlerName: "qwen/qwen3.5-122b-a10b" })
+            },
+            { name: "Free tier", RPM: 500, TPM: 200000, RPD: 10000 })
+
+        new Instance(this,
+            {
+                name: "Deepseek v4 Flash", provider: "Nvidia", quality: 250,
+                card: "https://docs.api.nvidia.com/nim/reference/deepseek-ai-deepseek-v4-flash",
+                api: new Nvidia_API({ providerName: "Nvidia", handlerName: "deepseek-ai/deepseek-v4-flash" })
+            },
+            { name: "Free tier", RPM: 500, TPM: 200000, RPD: 10000 })
+
+
     }
     sortInstances(selector) {
         if (Array.isArray(selector))
