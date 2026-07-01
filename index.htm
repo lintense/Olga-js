@@ -31,7 +31,7 @@
 
         const showStatus = () => {
             document.getElementById("olgaStatus").innerHTML = olga.instances.map(instance =>
-                `${instance.name}: Status=${instance.model.api.metrics.status.toString()} (${instance.model.api.metrics.statusText}) Ping(ms)=${Math.trunc(instance.model.api.metrics.ping)}`).join("<br>")
+                `${instance.name}: Status=${instance.model.api.metrics.status.toString()} (${instance.model.api.metrics.statusText}) Ping=${Math.trunc(instance.model.api.metrics.ping)}ms`).join("<br>")
         }
         showStatus()
         setInterval(showStatus, 1000);

@@ -5,11 +5,12 @@ export default class BaseAPI {
     static SERVER_MANAGED_KEY = "api"
     static BROWSER_MANAGED_KEY = "api-tempkey"
     static API_KEY_SUFFIX = "_KEY"
+    static TEST_CONNECTION = "Just respond the word ok no other text"
 
     constructor({ providerName, handlerName }) {
         this.providerName = providerName
         this.handlerName = handlerName
-        this.metrics = { lastTested: null, ping: null, speed: null, status: 0, statusText: "Not tested yet" }
+        this.metrics = { lastTested: null, ping: null, speed: null, status: 0, statusText: BaseAPI.HTTP_CODE_TEXT[0] }
         Object.freeze(this)
     }
     // This function contains the logic to extract IIS rules from the streaming response.
@@ -91,6 +92,7 @@ export default class BaseAPI {
         Status: (api => api.metrics.status),
     }
     static HTTP_CODE_TEXT = {
+        0: 'Not tested yet',
         200: 'OK',
         201: 'Created',
         202: 'Accepted',
