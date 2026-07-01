@@ -9,7 +9,7 @@ export default class BaseAPI {
     constructor({ providerName, handlerName }) {
         this.providerName = providerName
         this.handlerName = handlerName
-        this.metrics = { lastTested: null, ping: null, speed: null, status: false }
+        this.metrics = { lastTested: null, ping: null, speed: null, status: 0, statusText: "Not tested yet" }
         Object.freeze(this)
     }
     // This function contains the logic to extract IIS rules from the streaming response.
@@ -41,7 +41,8 @@ export default class BaseAPI {
                 body: JSON.stringify(payload)
             });
 
-            this.metrics.status = response.ok
+            this.metrics.status = response.status
+            this.metrics.statusText = BaseAPI.HTTP_CODE_TEXT[response.status] || response.statusText
             const pingTime = performance.now() - t1
             this.metrics.ping = !this.metrics.ping ? pingTime : (this.metrics.ping * 2 + pingTime) / 3 // Moving average ping in ms
             const reader = response.body.getReader();
@@ -79,7 +80,7 @@ export default class BaseAPI {
             console.log(`...Streaming response from ${this.handlerName} ended`);
 
         } catch (error) {
-            this.metrics.status = false
+            this.metrics.status = 500
             console.error("Error reading proxy stream:", error);
         }
     }
@@ -89,4 +90,18 @@ export default class BaseAPI {
         Speed: (api => api.metrics.speed),
         Status: (api => api.metrics.status),
     }
+    static HTTP_CODE_TEXT = {
+        200: 'OK',
+        201: 'Created',
+        202: 'Accepted',
+        204: 'No Content',
+        400: 'Bad Request',
+        401: 'Unauthorized',
+        403: 'Forbidden',
+        404: 'Not Found',
+        429: 'Too Many Requests',
+        500: 'Internal Server Error',
+        502: 'Bad Gateway',
+        503: 'Service Unavailable'
+    };
 }

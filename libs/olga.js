@@ -1,6 +1,7 @@
 import BaseAPI from '../apis/BaseAPI.js';
 import Google_API from '../apis/Google_API.js';
 import Nvidia_API from '../apis/Nvidia_API.js';
+import OpenAI_API from '../apis/OpenAI_API.js';
 import MiniSort from '../libs//MiniSort.js';
 
 export default class Olga {
@@ -43,6 +44,21 @@ export default class Olga {
                 api: new Nvidia_API({ providerName: "Nvidia_GLM", handlerName: "z-ai/glm-5.1" })
             },
             { name: "Free tier", RPM: 4, TPM: 1000, RPD: 1000 })
+        new Instance(this,
+            {
+                name: "GPT 5 nano", provider: "Open AI", quality: 200,
+                card: "https://developers.openai.com/api/docs/models/gpt-5-nano",
+                api: new OpenAI_API({ providerName: "Open_AI", handlerName: "gpt-5-nano" })
+            },
+            { name: "Tier 1", RPM: 500, TPM: 200000, RPD: 0, tokenInputPrice: 0.05 / 1000000, tokenOutputPrice: 0.4 / 1000000 })
+
+        new Instance(this,
+            {
+                name: "GPT 3.5 turbo", provider: "Open AI", quality: 250,
+                card: "https://developers.openai.com/api/docs/models/gpt-3.5-turbo",
+                api: new OpenAI_API({ providerName: "Open_AI", handlerName: "gpt-3.5-turbo", tokenInputPrice: 0.5 / 1000000, tokenOutputPrice: 1.5 / 1000000 })
+            },
+            { name: "Tier 1", RPM: 500, TPM: 200000, RPD: 10000, tokenInputPrice: 0.5 / 1000000, tokenOutputPrice: 1.5 / 1000000 })
     }
     sortInstances(selector) {
         if (Array.isArray(selector))
@@ -62,20 +78,20 @@ export default class Olga {
     test() {
         this.instances.forEach(instance => instance.test())
     }
+    indent(text, tabs = 0) {
+        return text.split('\n').map(line => '   '.repeat(tabs) + line).join('\n')
+    }
     extractIISRules() {
         const apis = {}
-        this.instances.forEach(instance => { apis[instance.model.provider] = instance.model.api.extractIISRules() })
+        this.instances.forEach(instance => { apis[instance.model.provider] = this.indent(instance.model.api.extractIISRules(), 4) })
 
         let textContents = `<?xml version="1.0" encoding="utf-8"?>
 <configuration>
     <system.webServer>
         <rewrite>
             <rules>
-`
-        for (const [key, value] of Object.entries(apis))
-            textContents += value + "\n"
-
-        textContents += `               </rules>
+                ${Object.values(apis).join('\n')}
+            </rules>
             <allowedServerVariables>
                 <remove name="HTTP_Authorization" />
                 <add name="HTTP_Authorization" />
@@ -101,7 +117,7 @@ export default class Olga {
 
         return textContents
     }
-    upload(textContents, fileName) {
+    download(textContents, fileName) {
         // 1. Create a Blob object from your string data
         const blob = new Blob([textContents], { type: 'text/plain;charset=utf-8' });
 

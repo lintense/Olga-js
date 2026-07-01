@@ -13,10 +13,10 @@
     <div id="olgaStatus"></div>
     <br>
     <button id="testInstances">Test instances</button>
-    <button id="uploadRulesConfig">Upload Rules (IIS)</button>
-    <button id="uploadKeysMap">Upload Keys map (IIS)</button>
-    * Upload Rules : A complete web.config file to be inserted into your application folder.
-    * Upload Keys map : A section of a web.config file to be inserted into your root web.config file.
+    <button id="downloadRulesConfig">Download Rules (IIS)</button>
+    <button id="downloadKeysMap">Download Keys map (IIS)</button>
+    <br> * Download Rules : A complete web.config file to be inserted into your application folder.
+    <br> * Download Keys map : A section of a web.config file to be inserted into your root web.config file.
 
     <script type="module">"use strict";
         // To use something from olga.js, you MUST import it explicitly
@@ -31,13 +31,13 @@
 
         const showStatus = () => {
             document.getElementById("olgaStatus").innerHTML = olga.instances.map(instance =>
-                `${instance.name}: Status=${instance.model.api.metrics.status.toString().toUpperCase()} Ping(ms)=${Math.trunc(instance.model.api.metrics.ping)}`).join("<br>")
+                `${instance.name}: Status=${instance.model.api.metrics.status.toString()} (${instance.model.api.metrics.statusText}) Ping(ms)=${Math.trunc(instance.model.api.metrics.ping)}`).join("<br>")
         }
         showStatus()
         setInterval(showStatus, 1000);
         document.getElementById("testInstances").addEventListener("click", () => olga.test())
-        document.getElementById("uploadRulesConfig").addEventListener("click", () => olga.upload(olga.extractIISRules(), "web.config"))
-        document.getElementById("uploadKeysMap").addEventListener("click", () => olga.upload(olga.extractKeysMaps(), "system.webServer.config"))
+        document.getElementById("downloadRulesConfig").addEventListener("click", () => olga.download(olga.extractIISRules(), "web.config"))
+        document.getElementById("downloadKeysMap").addEventListener("click", () => olga.download(olga.extractKeysMaps(), "system.webServer.config"))
 
         //import MiniSort from './libs/MiniSort.js';
         //MiniSort.test()
