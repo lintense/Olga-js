@@ -13,7 +13,11 @@
     <div id="olgaStatus"></div>
     <br>
     <button id="testInstances">Test instances</button>
-    <button id="uploadConfig">Upload web.config</button>
+    <button id="uploadRulesConfig">Upload Rules (IIS)</button>
+    <button id="uploadKeysMap">Upload Keys map (IIS)</button>
+    * Upload Rules : A complete web.config file to be inserted into your application folder.
+    * Upload Keys map : A section of a web.config file to be inserted into your root web.config file.
+
     <script type="module">"use strict";
         // To use something from olga.js, you MUST import it explicitly
         import Olga from './libs/olga.js';
@@ -32,8 +36,8 @@
         showStatus()
         setInterval(showStatus, 1000);
         document.getElementById("testInstances").addEventListener("click", () => olga.test())
-        document.getElementById("uploadConfig").addEventListener("click", () => olga.downloadIIS_Config())
-
+        document.getElementById("uploadRulesConfig").addEventListener("click", () => olga.upload(olga.extractIISRules(), "web.config"))
+        document.getElementById("uploadKeysMap").addEventListener("click", () => olga.upload(olga.extractKeysMaps(), "system.webServer.config"))
 
         //import MiniSort from './libs/MiniSort.js';
         //MiniSort.test()

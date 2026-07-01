@@ -9,7 +9,8 @@ export default class Nvidia_API extends BaseAPI {
         return `<rule name="Nvidia-Models-api" stopProcessing="true">
 <match url=".*Nvidia-Models-api(.*)" />
 <conditions>
-    <add input="{API_KEYS:${this.providerName}${BaseAPI.API_KEY_SUFFIX}}" pattern="(.+)" />
+    <add input="{HTTP_Authorization}" pattern="^Bearer\\s+(.+)$" />
+    <add input="{API_KEYS:{C:1}}" pattern="(.+)" />
 </conditions>
 <serverVariables>
     <set name="HTTP_Authorization" value="Bearer {C:1}" />

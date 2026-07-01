@@ -35,15 +35,14 @@ export default class Olga {
                 card: "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/3-5-flash",
                 api: new Google_API({ providerName: "Google", handlerName: "gemini-3.5-flash" })
             },
-            { name: "Free tier", RPM: 10, TPM: 250000, RPD: 1500 }),
-            // https://build.nvidia.com/z-ai/glm-5.1
-            new Instance(this,
-                {
-                    name: "GLM 5.1", provider: "Nvidia", quality: 350,
-                    card: "https://build.nvidia.com/z-ai/glm-5.1/modelcard",
-                    api: new Nvidia_API({ providerName: "Nvidia_GLM", handlerName: "z-ai/glm-5.1" })
-                },
-                { name: "Free tier", RPM: 4, TPM: 1000, RPD: 1000 })
+            { name: "Free tier", RPM: 10, TPM: 250000, RPD: 1500 })
+        new Instance(this,
+            {
+                name: "GLM 5.1", provider: "Nvidia", quality: 350,
+                card: "https://build.nvidia.com/z-ai/glm-5.1/modelcard",
+                api: new Nvidia_API({ providerName: "Nvidia_GLM", handlerName: "z-ai/glm-5.1" })
+            },
+            { name: "Free tier", RPM: 4, TPM: 1000, RPD: 1000 })
     }
     sortInstances(selector) {
         if (Array.isArray(selector))
@@ -63,7 +62,7 @@ export default class Olga {
     test() {
         this.instances.forEach(instance => instance.test())
     }
-    downloadIIS_Config() {
+    extractIISRules() {
         const apis = {}
         this.instances.forEach(instance => { apis[instance.model.provider] = instance.model.api.extractIISRules() })
 
@@ -84,8 +83,25 @@ export default class Olga {
         </rewrite>
     </system.webServer>
 </configuration>`
-        const filename = "web.config"
 
+        return textContents
+    }
+    extractKeysMaps() {
+        const providerNames = new Set(this.instances.map(instance => instance.model.api.providerName))
+
+        let textContents = `<system.webServer>
+        <rewrite>
+            <rewriteMaps>
+                <rewriteMap name="API_KEYS">
+                    ${providerNames.keys().map(pn => `<add key="${pn}_KEY" value="your key here!" />`).toArray().join('\n')}
+                </rewriteMap>
+            </rewriteMaps>
+        </rewrite>
+    </system.webServer>`
+
+        return textContents
+    }
+    upload(textContents, fileName) {
         // 1. Create a Blob object from your string data
         const blob = new Blob([textContents], { type: 'text/plain;charset=utf-8' });
 
@@ -95,7 +111,7 @@ export default class Olga {
         // 3. Create a hidden anchor element
         const link = document.createElement('a');
         link.href = blobUrl;
-        link.download = filename; // Sets the default saved file name
+        link.download = fileName; // Sets the default saved file name
         link.style.display = 'none';
 
         // 4. Append to DOM, trigger click to prompt download, then clean up
