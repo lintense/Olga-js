@@ -26,11 +26,11 @@ export default class OpenAI_API extends BaseAPI {
     extractContent() {
         return /"content"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
     }
-    async generate({ prompt, chunkHandler, doneHandler, token, apiKey = null, temp, topP, maxOutput }) {
+    async generate({ prompt, chunkHandler, doneHandler, basePath, token, apiKey = null, temp, topP, maxOutput }) {
         this.metrics.lastTested = Date.now() // Mark the time of this generation attempt;
         const url = apiKey == null
-            ? `./OpenAI-Models-${BaseAPI.SERVER_MANAGED_KEY}`
-            : `./OpenAI-Models-${BaseAPI.BROWSER_MANAGED_KEY}`
+            ? `${basePath}OpenAI-Models-${BaseAPI.SERVER_MANAGED_KEY}`
+            : `${basePath}OpenAI-Models-${BaseAPI.BROWSER_MANAGED_KEY}`
         const headers = apiKey
             ? { Authorization: "Bearer " + apiKey }
             : { Authorization: "Bearer " + this.providerName + BaseAPI.API_KEY_SUFFIX }

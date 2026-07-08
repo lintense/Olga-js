@@ -4,7 +4,8 @@ import initModels from './models.js';
 
 export default class Olga {
 
-    constructor() {
+    constructor(basePath = './') {
+        this.basePath = basePath.endsWith('/') ? basePath : basePath + '/'
         this.models = []
         this.instances = []
         this.mini = new MiniSort(Instance.ACCESSORS)
@@ -27,7 +28,7 @@ export default class Olga {
 
         // Aquire best instance based on quality and availability
         const instances = this.selectInstance(Olga.DEFAULT_SELECTOR)
-        return instances[0].generate({ prompt, chunkHandler, doneHandler, apiKey })
+        return instances[0].generate({ prompt, chunkHandler, doneHandler, apiKey, basePath: this.basePath })
     }
     test() {
         this.instances.forEach(instance => instance.test())
@@ -139,6 +140,7 @@ class Model {
 const remap = (obj, func) => Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, v => value(func(v))]))
 class Instance {
     constructor(olga, model, plan) {
+        this.basePath = olga.basePath
         this.model = model
         this.plan = plan
         this.name = `${model.name} (${plan.name})`
@@ -154,7 +156,7 @@ class Instance {
     }
     generate({ prompt, chunkHandler, doneHandler, apiKey, temp = 1.0, topP = 0.95, maxOutput = 16384 }) {
         const token = { in: prompt.length, out: 0, ts: Date.now() }
-        const out = this.model.api.generate({ prompt, chunkHandler, doneHandler, apiKey, token, temp, topP, maxOutput })
+        const out = this.model.api.generate({ prompt, chunkHandler, doneHandler, basePath: this.basePath, apiKey, token, temp, topP, maxOutput })
         // TODO compute metrics here!!!
         this.tokenCount.push(token)
         this.runningBill += token.in * this.plan.tokenInputPrice + token.out * this.plan.tokenOutputPrice

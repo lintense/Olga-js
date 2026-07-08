@@ -18,11 +18,11 @@ export default class Google_API extends BaseAPI {
     extractContent() {
         return /"text"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
     }
-    async generate({ prompt, chunkHandler, doneHandler, token, apiKey = null, temp, topP, maxOutput }) {
+    async generate({ prompt, chunkHandler, doneHandler, basePath, token, apiKey = null, temp, topP, maxOutput }) {
         this.metrics.lastTested = Date.now() // Mark the time of this generation attempt;
         const url = apiKey == null
-            ? `./${this.providerName}-${BaseAPI.SERVER_MANAGED_KEY}/v1beta/models/${this.handlerName}:streamGenerateContent?`
-            : `./${this.providerName}-${BaseAPI.BROWSER_MANAGED_KEY}/v1beta/models/${this.handlerName}:streamGenerateContent?key=${apiKey}`;
+            ? `${basePath}${this.providerName}-${BaseAPI.SERVER_MANAGED_KEY}/v1beta/models/${this.handlerName}:streamGenerateContent?`
+            : `${basePath}${this.providerName}-${BaseAPI.BROWSER_MANAGED_KEY}/v1beta/models/${this.handlerName}:streamGenerateContent?key=${apiKey}`;
         const payload = {
             contents: [
                 {
