@@ -6,7 +6,6 @@ export default class Olga {
 
     constructor(basePath = './') {
         this.basePath = basePath.endsWith('/') ? basePath : basePath + '/'
-        this.models = []
         this.instances = []
         this.mini = new MiniSort(Instance.ACCESSORS)
         Object.freeze(this)
@@ -17,18 +16,20 @@ export default class Olga {
     }
     sortInstances(selector) {
         if (Array.isArray(selector))
-            return this.mini.process(this.instances, this.mini.parse(selector))
-        else
             return this.mini.processList(this.instances, this.mini.parseList(selector))
+        else
+            return this.mini.process(this.instances, this.mini.parse(selector))
     }
     static DEFAULT_SELECTOR = "Status=true, <TokenOutputPrice, <TokenInputPrice, >Quality";
     * generate({ instance = null, prompt, chunkHandler, doneHandler, apiKey = null }) {
         if (!prompt)
             throw new Error("Empty prompt!")
 
-        // Aquire best instance based on quality and availability
-        const instances = this.selectInstance(Olga.DEFAULT_SELECTOR)
-        return instances[0].generate({ prompt, chunkHandler, doneHandler, apiKey, basePath: this.basePath })
+        const inst = instance || this.sortInstances(Olga.DEFAULT_SELECTOR)[0]
+        if (!inst)
+            throw new Error("No suitable instance found!")
+        console.log(inst)
+        return inst.generate({ prompt, chunkHandler, doneHandler, apiKey, basePath: this.basePath })
     }
     test() {
         this.instances.forEach(instance => instance.test())
@@ -166,9 +167,9 @@ class Instance {
         this.generate({ prompt: BaseAPI.TEST_CONNECTION })
     }
     static ACCESSORS = {
-        ...remap(Model.ACCESSORS, x => instance => x(instance.model)),
-        ...remap(Plan.ACCESSORS, x => instance => x(instance.plan)),
-        ...remap(BaseAPI.ACCESSORS, x => instance => x(instance.model.api)),
+        ...remap(Model.ACCESSORS, instance => instance.model),
+        ...remap(Plan.ACCESSORS, instance => instance.plan),
+        ...remap(BaseAPI.ACCESSORS, instance => instance.model.api),
     }
 }
 
