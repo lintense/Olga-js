@@ -22,7 +22,7 @@ export default class BaseAPI {
     extractContent() {
         throw new Error("To be implemented by subclass")
     }
-    async generate({ chunkHandler = BaseAPI.NULL_HANDLER, doneHandler = BaseAPI.DEF_HANDLER, token, url, payload, headers = {} }) {
+    async generate({ prompt, chunkHandler = BaseAPI.NULL_HANDLER, doneHandler = BaseAPI.DEF_HANDLER, token, url, payload, headers = {} }) {
         this.metrics.lastTested = Date.now() // Mark the time of this generation attempt;
         console.log(`Sending request to ${this.handlerName} with prompt: ${prompt}`);
         const t1 = performance.now()

@@ -31,13 +31,21 @@ export default class Google_API extends BaseAPI {
                     ]
                 }
             ],
-            "generationConfig": {
+            systemInstruction: {
+                parts: [
+                    { text: "Be concise. No intro. No outro. Output JSON only." }
+                ]
+            },
+            generationConfig: {
                 "temperature": temp,
                 "topP": topP,
-                "maxOutputTokens": maxOutput
+                "maxOutputTokens": maxOutput,
+                "thinkingConfig": {
+                    "thinkingLevel": "MINIMAL"
+                }
             }
         };
-        console.log(`Sending request to ${this.handlerName} with payload:`, prompt);
+        // console.log(`Sending request to ${this.handlerName} with payload:`, prompt);
         return super.generate({ prompt, chunkHandler, doneHandler, token, url, payload })
     }
 

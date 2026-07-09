@@ -163,7 +163,7 @@ class Instance {
         this.runningBill += token.in * this.plan.tokenInputPrice + token.out * this.plan.tokenOutputPrice
     }
     test() {
-        this.model.api.metrics.status = false
+        this.model.api.metrics.status = 0
         this.generate({ prompt: BaseAPI.TEST_CONNECTION })
     }
     static ACCESSORS = {
